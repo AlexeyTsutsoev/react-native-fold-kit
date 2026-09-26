@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import {
   FoldAwareView,
+  splitByFolds,
   useFoldState,
   type ViewRegions,
 } from 'react-native-fold-kit';
-import { RegionList, RegionOverlay } from './RegionViews';
+import { PaneOverlay, RegionList, RegionOverlay } from './RegionViews';
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
@@ -21,12 +22,17 @@ export function StateScreen() {
   const [includeInactive, setIncludeInactive] = useState(false);
   const [viewRegions, setViewRegions] = useState<ViewRegions | null>(null);
   const [eventCount, setEventCount] = useState(0);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const panes = viewRegions
+    ? splitByFolds(size, viewRegions.folds, { includeInactive })
+    : [];
 
   return (
     <View style={styles.container}>
       <FoldAwareView
         style={StyleSheet.absoluteFill}
         includeInactive={includeInactive}
+        onLayout={(event) => setSize(event.nativeEvent.layout)}
         onRegionsChange={(regions) => {
           setViewRegions(regions);
           setEventCount((count) => count + 1);
@@ -34,6 +40,7 @@ export function StateScreen() {
       >
         {viewRegions && (
           <>
+            <PaneOverlay panes={panes} />
             <RegionOverlay regions={viewRegions.folds} kind="fold" />
             <RegionOverlay regions={viewRegions.occlusions} kind="occlusion" />
           </>
@@ -71,6 +78,16 @@ export function StateScreen() {
 
         <Text style={styles.title}>FoldAwareView</Text>
         <Field label="events" value={String(eventCount)} />
+        <Field
+          label="panes"
+          value={
+            panes
+              .map(
+                (pane) => `${Math.round(pane.width)}×${Math.round(pane.height)}`
+              )
+              .join(' · ') || '—'
+          }
+        />
         <View style={styles.field}>
           <Text style={styles.fieldLabel}>inactive</Text>
           <Switch value={includeInactive} onValueChange={setIncludeInactive} />

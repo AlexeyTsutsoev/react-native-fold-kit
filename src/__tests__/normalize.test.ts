@@ -2,12 +2,14 @@ import { describe, expect, it } from '@jest/globals';
 import {
   DEFAULT_FOLD_STATE,
   EMPTY_VIEW_REGIONS,
+  getFoldOrientation,
   isSameState,
   normalizeFoldState,
   normalizeRegions,
   normalizeViewRegions,
 } from '../normalize';
-import { rawCamera, rawFold, rawState } from '../__fixtures__/foldState';
+import type { FoldOrientation } from '../types';
+import { fold, rawCamera, rawFold, rawState } from '../__fixtures__/foldState';
 
 describe('normalizeFoldState', () => {
   it('maps a complete native payload', () => {
@@ -15,7 +17,7 @@ describe('normalizeFoldState', () => {
       posture: 'halfOpened',
       hingeAngle: 95.5,
       sizeClass: { horizontal: 'regular', vertical: 'compact' },
-      folds: [rawFold],
+      folds: [fold],
       occlusions: [rawCamera],
       verticalBarEdge: 'leading',
     });
@@ -111,7 +113,7 @@ describe('normalizeRegions', () => {
 describe('normalizeViewRegions', () => {
   it('maps folds and occlusions', () => {
     expect(normalizeViewRegions({ folds: [rawFold], occlusions: [] })).toEqual({
-      folds: [rawFold],
+      folds: [fold],
       occlusions: [],
     });
   });
@@ -132,5 +134,27 @@ describe('isSameState', () => {
         normalizeFoldState({ ...rawState, hingeAngle: 96 })
       )
     ).toBe(false);
+  });
+});
+
+describe('fold orientation', () => {
+  const cases: Array<[{ width: number; height: number }, FoldOrientation]> = [
+    [{ width: 20, height: 900 }, 'vertical'],
+    [{ width: 0, height: 900 }, 'vertical'],
+    [{ width: 669, height: 40 }, 'horizontal'],
+    [{ width: 669, height: 0 }, 'horizontal'],
+    [{ width: 10, height: 10 }, 'vertical'],
+  ];
+  it.each(cases)('%p is %s', (size, orientation) => {
+    expect(getFoldOrientation(size)).toBe(orientation);
+  });
+
+  it('is added to folds but not to occlusions', () => {
+    const state = normalizeFoldState({
+      ...rawState,
+      folds: [{ ...rawFold, x: 0, y: 455, width: 669, height: 40 }],
+    });
+    expect(state.folds[0]?.orientation).toBe('horizontal');
+    expect(state.occlusions[0]).not.toHaveProperty('orientation');
   });
 });

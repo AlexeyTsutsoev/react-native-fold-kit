@@ -7,12 +7,14 @@ import {
   Text,
   View,
 } from 'react-native';
+import { PanesScreen } from './PanesScreen';
 import { ScrollScreen } from './ScrollScreen';
 import { StateScreen } from './StateScreen';
 
 const SCREENS = {
   state: { title: 'State', Component: StateScreen },
   scroll: { title: 'Scroll', Component: ScrollScreen },
+  panes: { title: 'Panes', Component: PanesScreen },
 } as const;
 
 type ScreenKey = keyof typeof SCREENS;

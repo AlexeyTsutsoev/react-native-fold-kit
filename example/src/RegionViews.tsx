@@ -1,5 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
-import type { Insets, Region } from 'react-native-fold-kit';
+import {
+  getFoldOrientation,
+  type Insets,
+  type Pane,
+  type Region,
+} from 'react-native-fold-kit';
 
 export type RegionKind = 'fold' | 'occlusion';
 
@@ -29,8 +34,7 @@ export function describeRegion(region: Region, kind: RegionKind) {
     ['size', `${pt(width)} × ${pt(height)} dp`],
   ];
   if (kind === 'fold') {
-    // A fold is a band: its long side is the direction of the hinge line.
-    rows.push(['hinge', width >= height ? 'horizontal line' : 'vertical line']);
+    rows.push(['hinge', `${getFoldOrientation(region)} line`]);
   }
   if (hasMargins(margins)) {
     rows.push([
@@ -136,6 +140,22 @@ export function RegionOverlay({
   ));
 }
 
+/** Outlines panes from `splitByFolds`, labelled P1, P2, … */
+export function PaneOverlay({ panes }: { panes: ReadonlyArray<Pane> }) {
+  return panes.map((pane, index) => (
+    <View
+      key={index}
+      pointerEvents="none"
+      style={[
+        styles.pane,
+        { left: pane.x, top: pane.y, width: pane.width, height: pane.height },
+      ]}
+    >
+      <Text style={styles.paneLabel}>P{index + 1}</Text>
+    </View>
+  ));
+}
+
 const styles = StyleSheet.create({
   list: {
     gap: 6,
@@ -211,5 +231,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: 'white',
+  },
+  pane: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: '#34c759',
+    borderStyle: 'dashed',
+  },
+  paneLabel: {
+    position: 'absolute',
+    right: 4,
+    bottom: 4,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#34c759',
   },
 });

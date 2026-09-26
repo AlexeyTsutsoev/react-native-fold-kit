@@ -3,6 +3,7 @@
  *
  *   jest.mock('react-native-fold-kit', () => require('react-native-fold-kit/jest'));
  *
+ *   applyMockFoldState(mockFoldStates.halfOpenedBook);
  *   setMockFoldState({ posture: 'halfOpened', folds: [fold] });
  *
  * Exposes the same API as the real entry point plus `setMock*` / `resetMock*`
@@ -20,11 +21,17 @@ import type { FoldAwareViewProps } from './FoldAwareView.types';
 import type { FoldState, ViewRegions } from './types';
 import { useStoreSelector } from './useStoreSelector';
 
-export { DEFAULT_FOLD_STATE } from './normalize';
+// Pure helpers are the real implementations.
+export { DEFAULT_FOLD_STATE, getFoldOrientation } from './normalize';
+export { splitByFolds, type SplitByFoldsOptions } from './splitByFolds';
+export { mockFoldStates } from './mockFoldStates';
 export type { FoldAwareViewProps } from './FoldAwareView.types';
 export type {
+  Fold,
+  FoldOrientation,
   FoldState,
   Insets,
+  Pane,
   Posture,
   Region,
   SizeClass,
@@ -47,6 +54,17 @@ export function setMockFoldState(patch: Partial<FoldState>) {
 export function setMockViewRegions(regions: ViewRegions) {
   viewRegions = regions;
   viewListeners.forEach((listener) => listener());
+}
+
+/**
+ * Sets the window-level state and makes every `FoldAwareView` report the same
+ * folds and occlusions (as if it filled the window). Typically used with a
+ * `mockFoldStates` preset.
+ */
+export function applyMockFoldState(state: FoldState) {
+  foldState = state;
+  foldListeners.forEach((listener) => listener());
+  setMockViewRegions({ folds: state.folds, occlusions: state.occlusions });
 }
 
 /** Restores defaults. Call it in `afterEach`. */
@@ -108,15 +126,17 @@ export function FoldAwareView({
     getViewRegions
   );
 
-  // Like the native view, report only when regions change, not when the
-  // handler's identity does: an inline handler that sets state would
-  // otherwise re-fire on every render and loop.
+  // Like the native view, report when regions change or a handler appears,
+  // not when the handler's identity does: an inline handler that sets state
+  // would otherwise re-fire on every render and loop.
   const handlerRef = useRef(onRegionsChange);
   useLayoutEffect(() => {
     handlerRef.current = onRegionsChange;
   });
+  const hasHandler = onRegionsChange != null;
 
   useEffect(() => {
+    if (!hasHandler) return;
     handlerRef.current?.(
       includeInactive
         ? regions
@@ -125,7 +145,7 @@ export function FoldAwareView({
             occlusions: regions.occlusions.filter((region) => region.isActive),
           }
     );
-  }, [regions, includeInactive]);
+  }, [regions, includeInactive, hasHandler]);
 
   return <View {...rest} />;
 }

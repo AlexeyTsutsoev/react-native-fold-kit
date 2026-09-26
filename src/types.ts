@@ -32,7 +32,34 @@ export type Region = Readonly<{
   margins: Insets;
 }>;
 
-/** Window-level state, coordinates are relative to the app window. */
+/**
+ * Direction of the fold line: `vertical` splits content into left and right
+ * ("book"), `horizontal` into top and bottom ("laptop"). Derived from the
+ * region's geometry (the long side), so it is the same on iOS and Android.
+ */
+export type FoldOrientation = 'vertical' | 'horizontal';
+
+/** A fold (division) region. */
+export type Fold = Region &
+  Readonly<{
+    orientation: FoldOrientation;
+  }>;
+
+/** A rectangle produced by `splitByFolds`, in the coordinates of the split area. */
+export type Pane = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}>;
+
+/**
+ * Window-level state, coordinates are relative to the app window.
+ *
+ * Arrays are typed as plain arrays so they can be stored and passed around
+ * naturally (e.g. `useState<Fold[]>`). Treat them as read-only: shared
+ * defaults are frozen and throw on mutation.
+ */
 export type FoldState = Readonly<{
   posture: Posture;
   /**
@@ -42,14 +69,14 @@ export type FoldState = Readonly<{
   hingeAngle: number | null;
   sizeClass: Readonly<{ horizontal: SizeClass; vertical: SizeClass }>;
   /** Active fold (division) regions. */
-  folds: ReadonlyArray<Region>;
+  folds: Fold[];
   /** Active occlusion regions, e.g. the camera. */
-  occlusions: ReadonlyArray<Region>;
+  occlusions: Region[];
   verticalBarEdge: VerticalBarEdge;
 }>;
 
 /** View-level regions, coordinates are relative to the observing view. */
 export type ViewRegions = Readonly<{
-  folds: ReadonlyArray<Region>;
-  occlusions: ReadonlyArray<Region>;
+  folds: Fold[];
+  occlusions: Region[];
 }>;

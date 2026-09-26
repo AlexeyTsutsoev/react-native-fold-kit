@@ -38,6 +38,16 @@ struct FoldModelsTests {
     #expect(abs(reading.angleDegrees - degrees) < 1e-9)
   }
 
+  @Test("Hinge angle is rounded to 0.1° like on Android")
+  func hingeAngleIsRounded() {
+    let noisy = HingeReading(status: .partiallyOpen, angleRadians: 95.04 * .pi / 180)
+    let slightlyDifferent = HingeReading(status: .partiallyOpen, angleRadians: 95.01 * .pi / 180)
+    #expect(noisy.angleDegrees == 95.0)
+    // Sub-0.1° noise produces equal readings, hence no new event.
+    #expect(noisy == slightlyDifferent)
+    #expect(HingeReading(status: .partiallyOpen, angleRadians: 95.06 * .pi / 180).angleDegrees == 95.1)
+  }
+
   @Test("Region dictionary")
   func regionDictionary() {
     let region = FoldRegion(

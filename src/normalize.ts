@@ -1,4 +1,6 @@
 import type {
+  Fold,
+  FoldOrientation,
   FoldState,
   Insets,
   Posture,
@@ -15,18 +17,27 @@ const ZERO_INSETS: Insets = Object.freeze({
   right: 0,
 });
 
+/**
+ * An empty array shared by all consumers: frozen so an accidental `push`
+ * throws instead of silently corrupting every default, typed as a plain array
+ * to match the public types.
+ */
+function frozenEmpty<T>(): T[] {
+  return Object.freeze([]) as unknown as T[];
+}
+
 export const DEFAULT_FOLD_STATE: FoldState = Object.freeze({
   posture: 'unknown',
   hingeAngle: null,
   sizeClass: Object.freeze({ horizontal: 'unknown', vertical: 'unknown' }),
-  folds: Object.freeze([]),
-  occlusions: Object.freeze([]),
+  folds: frozenEmpty<Fold>(),
+  occlusions: frozenEmpty<Region>(),
   verticalBarEdge: null,
 });
 
 export const EMPTY_VIEW_REGIONS: ViewRegions = Object.freeze({
-  folds: Object.freeze([]),
-  occlusions: Object.freeze([]),
+  folds: frozenEmpty<Fold>(),
+  occlusions: frozenEmpty<Region>(),
 });
 
 const POSTURES: ReadonlyArray<Posture> = [
@@ -88,13 +99,27 @@ function normalizeRegion(raw: unknown): Region | null {
   };
 }
 
-export function normalizeRegions(raw: unknown): ReadonlyArray<Region> {
+export function normalizeRegions(raw: unknown): Region[] {
   if (!Array.isArray(raw)) {
     return [];
   }
   return raw
     .map(normalizeRegion)
     .filter((region): region is Region => region !== null);
+}
+
+/** The fold line runs along the region's long side; a square counts as vertical. */
+export function getFoldOrientation(
+  region: Pick<Region, 'width' | 'height'>
+): FoldOrientation {
+  return region.height >= region.width ? 'vertical' : 'horizontal';
+}
+
+export function normalizeFolds(raw: unknown): Fold[] {
+  return normalizeRegions(raw).map((region) => ({
+    ...region,
+    orientation: getFoldOrientation(region),
+  }));
 }
 
 function normalizeVerticalBarEdge(raw: unknown): VerticalBarEdge {
@@ -120,7 +145,7 @@ export function normalizeFoldState(raw: unknown): FoldState {
       horizontal: oneOf(raw.horizontalSizeClass, SIZE_CLASSES, 'unknown'),
       vertical: oneOf(raw.verticalSizeClass, SIZE_CLASSES, 'unknown'),
     },
-    folds: normalizeRegions(raw.folds),
+    folds: normalizeFolds(raw.folds),
     occlusions: normalizeRegions(raw.occlusions),
     verticalBarEdge: normalizeVerticalBarEdge(raw.verticalBarEdge),
   };
@@ -131,7 +156,7 @@ export function normalizeViewRegions(raw: unknown): ViewRegions {
     return EMPTY_VIEW_REGIONS;
   }
   return {
-    folds: normalizeRegions(raw.folds),
+    folds: normalizeFolds(raw.folds),
     occlusions: normalizeRegions(raw.occlusions),
   };
 }

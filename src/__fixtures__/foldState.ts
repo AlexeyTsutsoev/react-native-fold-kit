@@ -7,6 +7,9 @@ export const rawFold = {
   margins: { top: 0, left: 4, bottom: 0, right: 4 },
 };
 
+/** `rawFold` after normalization. */
+export const fold = { ...rawFold, orientation: 'vertical' as const };
+
 export const rawCamera = {
   x: 382,
   y: 0,

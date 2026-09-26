@@ -58,9 +58,19 @@ enum HingeStatus: Int {
 
 struct HingeReading: Equatable {
   var status: HingeStatus
-  var angleRadians: Double
+  /// Degrees rounded to 0.1°, the same rule as Android (FoldMapper.roundAngle).
+  /// Rounding here, not when serializing, makes snapshots with sub-0.1° noise
+  /// compare equal, so they don't produce events.
+  var angleDegrees: Double
 
-  var angleDegrees: Double { angleRadians * 180 / .pi }
+  init(status: HingeStatus, angleRadians: Double) {
+    self.status = status
+    self.angleDegrees = Self.roundedDegrees(fromRadians: angleRadians)
+  }
+
+  static func roundedDegrees(fromRadians radians: Double) -> Double {
+    (radians * 180 / .pi * 10).rounded() / 10
+  }
 }
 
 /// Window-level state. `dictionary` mirrors `NativeFoldState` in src/NativeFoldKit.ts.
