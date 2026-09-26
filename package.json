@@ -1,7 +1,7 @@
 {
   "name": "react-native-fold-kit",
   "version": "0.1.0",
-  "description": "Simple library for work with foldable devices",
+  "description": "Foldable device support for React Native: posture, hinge angle, fold regions and layout helpers for iPhone Duo and Android foldables",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -43,13 +43,20 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
-    "test:ios": "xcodebuild test -scheme FoldKitCore -destination \"platform=iOS Simulator,name=${IOS_TEST_DEVICE:-iPhone Duo}\" -quiet",
+    "test:ios": "bash scripts/test-ios.sh",
+    "test:android": "cd example/android && ./gradlew :react-native-fold-kit:testDebugUnitTest --console=plain",
     "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "foldable",
+    "iphone-duo",
+    "hinge",
+    "posture",
+    "dual-screen",
+    "jetpack-windowmanager"
   ],
   "repository": {
     "type": "git",
