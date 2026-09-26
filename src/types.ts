@@ -35,7 +35,10 @@ export type Region = Readonly<{
 /** Window-level state, coordinates are relative to the app window. */
 export type FoldState = Readonly<{
   posture: Posture;
-  /** Hinge angle in degrees (0 — closed, 180 — flat), `null` if unavailable. */
+  /**
+   * Hinge angle in degrees, `null` if unavailable: 0 — closed, 180 — flat.
+   * Devices that fold backwards report up to 360. Values are clamped to 0–360.
+   */
   hingeAngle: number | null;
   sizeClass: Readonly<{ horizontal: SizeClass; vertical: SizeClass }>;
   /** Active fold (division) regions. */

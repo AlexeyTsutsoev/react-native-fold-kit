@@ -26,7 +26,7 @@ export function describeRegion(region: Region, kind: RegionKind) {
   const rows: Array<[string, string]> = [
     ['x', `${pt(x)} → ${pt(x + width)}`],
     ['y', `${pt(y)} → ${pt(y + height)}`],
-    ['size', `${pt(width)} × ${pt(height)} pt`],
+    ['size', `${pt(width)} × ${pt(height)} dp`],
   ];
   if (kind === 'fold') {
     // A fold is a band: its long side is the direction of the hinge line.
