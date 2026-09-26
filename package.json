@@ -1,7 +1,7 @@
 {
   "name": "react-native-fold-kit",
   "version": "0.1.0",
-  "description": "Simple library for work with foldable devices",
+  "description": "Foldable device support for React Native: posture, hinge angle, fold regions and layout helpers for iPhone Duo and Android foldables",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -9,6 +9,11 @@
       "react-native-fold-kit-source": "./src/index.tsx",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
+    },
+    "./jest": {
+      "react-native-fold-kit-source": "./src/mock.tsx",
+      "types": "./lib/typescript/src/mock.d.ts",
+      "default": "./lib/module/mock.js"
     },
     "./package.json": "./package.json"
   },
@@ -38,14 +43,20 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
-    "release": "release-it --only-version",
-    "web": "vite",
-    "build:web": "vite build"
+    "test:ios": "bash scripts/test-ios.sh",
+    "test:android": "cd example/android && ./gradlew :react-native-fold-kit:testDebugUnitTest --console=plain",
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "foldable",
+    "iphone-duo",
+    "hinge",
+    "posture",
+    "dual-screen",
+    "jetpack-windowmanager"
   ],
   "repository": {
     "type": "git",
@@ -70,6 +81,7 @@
     "@react-native/eslint-config": "0.86.2",
     "@react-native/jest-preset": "0.86.2",
     "@release-it/conventional-changelog": "^12.0.0",
+    "@testing-library/react-native": "^14.0.1",
     "@types/react": "^19.2.0",
     "commitlint": "^21.2.1",
     "del-cli": "^7.0.0",
@@ -83,8 +95,8 @@
     "react": "19.2.3",
     "react-native": "0.86.2",
     "react-native-builder-bob": "^0.43.1",
-    "react-native-web": "~0.21.2",
     "release-it": "^21.0.1",
+    "test-renderer": "^1.0.0",
     "turbo": "^2.10.8",
     "typescript": "^6.0.3"
   },
@@ -115,16 +127,19 @@
     ]
   },
   "codegenConfig": {
-    "name": "FoldKitViewSpec",
+    "name": "FoldKitSpec",
     "type": "all",
     "jsSrcsDir": "src",
     "android": {
       "javaPackageName": "com.foldkit"
     },
     "ios": {
+      "modulesProvider": {
+        "FoldKit": "FoldKit"
+      },
       "components": {
-        "FoldKitView": {
-          "className": "FoldKitView"
+        "FoldAwareView": {
+          "className": "FoldAwareView"
         }
       }
     }
@@ -142,7 +157,7 @@
       "customExportConditions": [
         "require",
         "react-native",
-        "<%- project.sourceCondition -%>"
+        "react-native-fold-kit-source"
       ]
     },
     "modulePathIgnorePatterns": [
@@ -181,8 +196,7 @@
       "eslint",
       "jest",
       "lefthook",
-      "release-it",
-      "vite"
+      "release-it"
     ],
     "version": "0.63.1"
   }

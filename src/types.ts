@@ -1,0 +1,82 @@
+/**
+ * Physical state of the hinge.
+ * - `flat` — fully open, a single flat surface
+ * - `halfOpened` — partially open (tent / laptop-like)
+ * - `folded` — closed, app runs on the outer display
+ * - `unknown` — no hinge, unsupported platform or OS version
+ */
+export type Posture = 'flat' | 'halfOpened' | 'folded' | 'unknown';
+
+export type SizeClass = 'compact' | 'regular' | 'unknown';
+
+/** Edge where iOS places the vertical bar; `null` when there is none. */
+export type VerticalBarEdge = 'leading' | 'trailing' | null;
+
+export type Insets = Readonly<{
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+}>;
+
+/**
+ * A reserved region (a fold or an occlusion such as the camera) in dp.
+ * `x`/`y`/`width`/`height` include `margins`.
+ */
+export type Region = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  isActive: boolean;
+  margins: Insets;
+}>;
+
+/**
+ * Direction of the fold line: `vertical` splits content into left and right
+ * ("book"), `horizontal` into top and bottom ("laptop"). Derived from the
+ * region's geometry (the long side), so it is the same on iOS and Android.
+ */
+export type FoldOrientation = 'vertical' | 'horizontal';
+
+/** A fold (division) region. */
+export type Fold = Region &
+  Readonly<{
+    orientation: FoldOrientation;
+  }>;
+
+/** A rectangle produced by `splitByFolds`, in the coordinates of the split area. */
+export type Pane = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}>;
+
+/**
+ * Window-level state, coordinates are relative to the app window.
+ *
+ * Arrays are typed as plain arrays so they can be stored and passed around
+ * naturally (e.g. `useState<Fold[]>`). Treat them as read-only: shared
+ * defaults are frozen and throw on mutation.
+ */
+export type FoldState = Readonly<{
+  posture: Posture;
+  /**
+   * Hinge angle in degrees, `null` if unavailable: 0 — closed, 180 — flat.
+   * Devices that fold backwards report up to 360. Values are clamped to 0–360.
+   */
+  hingeAngle: number | null;
+  sizeClass: Readonly<{ horizontal: SizeClass; vertical: SizeClass }>;
+  /** Active fold (division) regions. */
+  folds: Fold[];
+  /** Active occlusion regions, e.g. the camera. */
+  occlusions: Region[];
+  verticalBarEdge: VerticalBarEdge;
+}>;
+
+/** View-level regions, coordinates are relative to the observing view. */
+export type ViewRegions = Readonly<{
+  folds: Fold[];
+  occlusions: Region[];
+}>;

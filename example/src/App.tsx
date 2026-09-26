@@ -1,10 +1,50 @@
-import { View, StyleSheet } from 'react-native';
-import { FoldKitView } from 'react-native-fold-kit';
+import { useState } from 'react';
+import {
+  Platform,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { PanesScreen } from './PanesScreen';
+import { ScrollScreen } from './ScrollScreen';
+import { StateScreen } from './StateScreen';
+
+const SCREENS = {
+  state: { title: 'State', Component: StateScreen },
+  scroll: { title: 'Scroll', Component: ScrollScreen },
+  panes: { title: 'Panes', Component: PanesScreen },
+} as const;
+
+type ScreenKey = keyof typeof SCREENS;
 
 export default function App() {
+  const [screen, setScreen] = useState<ScreenKey>('state');
+  const { Component } = SCREENS[screen];
+
   return (
     <View style={styles.container}>
-      <FoldKitView color="#32a852" style={styles.box} />
+      <View style={styles.tabs}>
+        {(Object.keys(SCREENS) as ScreenKey[]).map((key) => (
+          <Pressable
+            key={key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: key === screen }}
+            onPress={() => setScreen(key)}
+            style={[styles.tab, key === screen && styles.tabSelected]}
+          >
+            <Text
+              style={[styles.tabText, key === screen && styles.tabTextSelected]}
+            >
+              {SCREENS[key].title}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <View style={styles.screen}>
+        <Component />
+      </View>
     </View>
   );
 }
@@ -12,12 +52,34 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    // No safe-area dependency in the example: a rough status bar offset.
+    paddingTop:
+      Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 60,
   },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
+  tabs: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    padding: 3,
+    borderRadius: 10,
+    backgroundColor: '#e5e5ea',
+  },
+  tab: {
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  tabSelected: {
+    backgroundColor: 'white',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#6e6e73',
+  },
+  tabTextSelected: {
+    color: 'black',
+    fontWeight: '600',
+  },
+  screen: {
+    flex: 1,
   },
 });

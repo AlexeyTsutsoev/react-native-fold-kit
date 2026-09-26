@@ -52,4 +52,10 @@ android {
 
 dependencies {
   implementation "com.facebook.react:react-android"
+  // FoldingFeature (WindowInfoTracker) and window metrics; the -java artifact
+  // provides a callback adapter so we don't need coroutines.
+  implementation "androidx.window:window:1.5.1"
+  implementation "androidx.window:window-java:1.5.1"
+
+  testImplementation "junit:junit:4.13.2"
 }
