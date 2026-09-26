@@ -6,6 +6,7 @@ import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.uimanager.common.UIManagerType
 import com.facebook.react.uimanager.events.Event
 import com.facebook.react.views.view.ReactViewGroup
 import com.foldkit.core.FoldMapper
@@ -137,7 +138,12 @@ class FoldAwareView(private val reactContext: ThemedReactContext) :
   }
 
   private fun dispatchRegionsChange(snapshot: ViewRegionsSnapshot): Boolean {
-    val dispatcher = UIManagerHelper.getEventDispatcher(reactContext) ?: return false
+    // The only overload available in every supported RN version (0.82+): the
+    // one-argument replacement doesn't exist in 0.82, this one is deprecated
+    // in newer versions but still works.
+    @Suppress("DEPRECATION")
+    val dispatcher =
+      UIManagerHelper.getEventDispatcher(reactContext, UIManagerType.FABRIC) ?: return false
     val surfaceId = UIManagerHelper.getSurfaceId(this)
     dispatcher.dispatchEvent(RegionsChangeEvent(surfaceId, id, snapshot))
     return true

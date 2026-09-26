@@ -36,7 +36,9 @@ Recorded with the [example app](#example-app) on the iPhone Duo simulator (iOS 2
 | Android 11+ (API 30)   | Adds the hinge angle sensor (`TYPE_HINGE_ANGLE`)                                              |
 | Web                    | Not supported                                                                                 |
 
-Developed and tested with React Native 0.86 and the New Architecture.
+Requires **React Native 0.82+** (the New Architecture is mandatory from 0.82 on). Developed with React Native 0.86.
+
+Tested on the **iPhone Duo simulator** (iOS 27.1) and a **Pixel 9 Pro Fold emulator** (Android 17, API 37). It hasn't been tested on physical foldables yet — reports from real devices are very welcome in [issues](https://github.com/AlexeyTsutsoev/react-native-fold-kit/issues).
 
 ## Installation
 
